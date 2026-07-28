@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}ანგარიში — CU აუდიტორიები{% endblock %}
+{% block content %}
+
+<h1>ანგარიშის პარამეტრები</h1>
+{% if error %}<div class="flash flash-error">{{ error }}</div>{% endif %}
+{% if success %}<div class="flash flash-success">{{ success }}</div>{% endif %}
+
+<form method="post" class="room-form narrow">
+  <div class="form-grid one-col">
+    <label>მიმდინარე პაროლი
+      <input type="password" name="current_password" required>
+    </label>
+    <label>ახალი პაროლი
+      <input type="password" name="new_password" required>
+    </label>
+    <label>გაიმეორეთ ახალი პაროლი
+      <input type="password" name="confirm_password" required>
+    </label>
+  </div>
+  <div class="form-actions">
+    <button type="submit" class="btn-primary">პაროლის შეცვლა</button>
+  </div>
+</form>
+
+{% endblock %}
