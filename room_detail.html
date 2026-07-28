@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}{{ room['code'] }} — CU აუდიტორიები{% endblock %}
+{% block content %}
+
+<div class="detail-header">
+  <div>
+    <a class="back-link" href="{{ url_for('dashboard') }}">← უკან</a>
+    <h1><span class="room-code big">{{ room['code'] }}</span> <span class="floor-badge">{{ room['floor'] }} სართული</span></h1>
+  </div>
+  <div class="detail-actions">
+    <a class="btn-secondary" href="{{ url_for('room_edit', room_id=room['id']) }}">რედაქტირება</a>
+    <form method="post" action="{{ url_for('room_delete', room_id=room['id']) }}"
+          onsubmit="return confirm('დარწმუნებული ხართ, რომ გსურთ {{ room['code'] }} წაშლა?');">
+      <button type="submit" class="btn-danger">წაშლა</button>
+    </form>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <div class="detail-field"><span class="field-label">აქსეს პოინტი</span><span class="field-value">{{ room['access_point'] or '—' }}</span></div>
+  <div class="detail-field"><span class="field-label">პროექტორი</span><span class="field-value">{{ room['projector'] or '—' }}</span></div>
+  <div class="detail-field"><span class="field-label">სმარტბორდი</span><span class="field-value">{{ room['smartboard'] or '—' }}</span></div>
+  <div class="detail-field"><span class="field-label">კომპიუტერი</span><span class="field-value">{{ room['computer'] or '—' }}</span></div>
+  <div class="detail-field"><span class="field-label">მონიტორი</span><span class="field-value">{{ room['monitor'] or '—' }}</span></div>
+  <div class="detail-field"><span class="field-label">კამერა</span><span class="field-value">{{ room['camera'] or '—' }}</span></div>
+  <div class="detail-field"><span class="field-label">დინამიკი</span><span class="field-value">{{ room['speaker'] or '—' }}</span></div>
+  <div class="detail-field wide"><span class="field-label">კომენტარი</span><span class="field-value">{{ room['comment'] or '—' }}</span></div>
+</div>
+
+<p class="meta-line">დამატებულია: {{ room['created_at'] }} · ბოლო ცვლილება: {{ room['updated_at'] }}</p>
+
+<h2 class="section-title">ცვლილებების ისტორია</h2>
+{% if history %}
+<ul class="history-list">
+  {% for h in history %}
+  <li>
+    <span class="history-time">{{ h['changed_at'] }}</span>
+    {% if h['action'] == 'created' %}
+      <span class="history-tag tag-created">შექმნილია</span>
+    {% elif h['action'] == 'deleted' %}
+      <span class="history-tag tag-deleted">წაშლილია</span>
+    {% else %}
+      <span class="history-tag tag-updated">{{ labels.get(h['field_name'], h['field_name']) }}</span>
+      <span class="history-diff"><s>{{ h['old_value'] or '—' }}</s> → <b>{{ h['new_value'] or '—' }}</b></span>
+    {% endif %}
+    {% if h['changed_by'] %}<span class="history-by">· {{ h['changed_by'] }}</span>{% endif %}
+  </li>
+  {% endfor %}
+</ul>
+{% else %}
+<p class="empty-state">ისტორია ჯერ ცარიელია.</p>
+{% endif %}
+
+{% endblock %}

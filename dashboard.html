@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block title %}აუდიტორიები — CU{% endblock %}
+{% block content %}
+
+<div class="stats-row">
+  <div class="stat-chip"><span class="stat-num">{{ stats.total }}</span><span class="stat-label">სულ აუდიტორია</span></div>
+  <div class="stat-chip warn"><span class="stat-num">{{ stats.no_access_point }}</span><span class="stat-label">აქსეს პოინტის გარეშე</span></div>
+  <div class="stat-chip warn"><span class="stat-num">{{ stats.no_projector }}</span><span class="stat-label">პროექტორის გარეშე</span></div>
+</div>
+
+<form class="filter-bar" method="get">
+  <div class="floor-tabs">
+    <a href="{{ url_for('dashboard', q=q, device_type=device_type) }}" class="floor-tab {{ 'active' if not current_floor }}">ყველა სართული</a>
+    {% for f in floors %}
+      <a href="{{ url_for('dashboard', floor=f, q=q, device_type=device_type) }}" class="floor-tab {{ 'active' if current_floor == f }}">{{ f }} სართული</a>
+    {% endfor %}
+  </div>
+
+  <div class="filter-controls">
+    <div class="device-filter">
+      <select name="device_type" onchange="this.form.submit()">
+        <option value="">-- ყველა მოწყობილობა --</option>
+        <option value="smartboard" {% if device_type == 'smartboard' %}selected{% endif %}>სმარტბორდი</option>
+        <option value="projector" {% if device_type == 'projector' %}selected{% endif %}>პროექტორი</option>
+        <option value="camera" {% if device_type == 'camera' %}selected{% endif %}>კამერა</option>
+        <option value="access_point" {% if device_type == 'access_point' %}selected{% endif %}>Access Point</option>
+        <option value="computer" {% if device_type == 'computer' %}selected{% endif %}>კომპიუტერი</option>
+        <option value="speaker" {% if device_type == 'speaker' %}selected{% endif %}>დინამიკი</option>
+      </select>
+    </div>
+
+    <div class="search-box">
+      <input type="text" name="q" value="{{ q }}" placeholder="ძებნა კოდით, მოდელით, ინვენტარის ნომრით...">
+      {% if current_floor %}<input type="hidden" name="floor" value="{{ current_floor }}">{% endif %}
+      <button type="submit">ძებნა</button>
+    </div>
+  </div>
+</form>
+
+{% if rooms %}
+<div class="room-grid">
+  {% for room in rooms %}
+  <div class="room-card floor-card-{{ room['floor'] }}">
+    <div class="room-card-head">
+      <span class="room-code">{{ room['code'] }}</span>
+      <div class="head-right">
+        {% if room['comment'] %}
+          <button type="button" class="notes-btn" title="ნოუთის ნახვა" onclick="openNotesModal('{{ room['code'] }}', '{{ room['comment']|e }}')">💬</button>
+        {% endif %}
+        <span class="floor-badge floor-badge-{{ room['floor'] }}">{{ room['floor'] }} სართ.</span>
+      </div>
+    </div>
+    
+    <a href="{{ url_for('room_detail', room_id=room['id']) }}" class="room-card-body">
+      <ul class="room-mini-list">
+        <li class="{{ 'is-missing' if room['access_point'] in ['არა','',None] }}"><b>AP</b> {{ room['access_point'] or '—' }}</li>
+        <li class="{{ 'is-missing' if room['projector'] in ['არა','',None] }}"><b>პროექტორი</b> {{ room['projector'] or '—' }}</li>
+        <li class="{{ 'is-missing' if room['smartboard'] in ['არა','',None] }}"><b>სმარტბორდი</b> {{ room['smartboard'] or '—' }}</li>
+        <li class="{{ 'is-missing' if room['camera'] in ['არა','',None] }}"><b>კამერა</b> {{ room['camera'] or '—' }}</li>
+      </ul>
+      <div class="view-detail-hint">დეტალურად &rarr;</div>
+    </a>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+  <p>ვერაფერი მოიძებნა არჩეული ფილტრით.</p>
+  <a href="{{ url_for('dashboard') }}">ფილტრის გასუფთავება</a>
+</div>
+{% endif %}
+
+<!-- Quick Comment Modal -->
+<div id="notesModal" class="modal-backdrop" onclick="closeNotesModal(event)">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <h3 id="modalRoomTitle">აუდიტორიის შენიშვნა</h3>
+      <button type="button" class="modal-close" onclick="closeNotesModal()">&times;</button>
+    </div>
+    <div class="modal-body" id="modalCommentText">
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn-secondary" onclick="closeNotesModal()">დახურვა</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function openNotesModal(roomCode, comment) {
+  document.getElementById('modalRoomTitle').innerText = roomCode + ' — შენიშვნა/კომენტარი';
+  document.getElementById('modalCommentText').innerText = comment;
+  document.getElementById('notesModal').classList.add('is-visible');
+}
+
+function closeNotesModal(event) {
+  if (event && event.target !== document.getElementById('notesModal') && !event.target.classList.contains('modal-close') && !event.target.classList.contains('btn-secondary')) {
+    return;
+  }
+  document.getElementById('notesModal').classList.remove('is-visible');
+}
+</script>
+
+{% endblock %}
